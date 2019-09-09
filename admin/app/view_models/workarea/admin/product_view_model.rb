@@ -19,7 +19,11 @@ module Workarea
       end
 
       def categories
-        @categories ||= CategoryViewModel.wrap(categorization.to_models)
+        @categories ||= if categorization.to_models.empty?
+                          []
+                        else
+                          CategoryViewModel.wrap(categorization.to_models)
+                        end
       end
 
       def rules_categories
@@ -33,7 +37,9 @@ module Workarea
       end
 
       def default_category
-        CategoryViewModel.wrap(categorization.default_model)
+        if categorization.default_model.present?
+          CategoryViewModel.wrap(categorization.default_model)
+        end
       end
 
       def storefront_view_model

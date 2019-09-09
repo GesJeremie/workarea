@@ -147,6 +147,19 @@ module Workarea
         @view_model = ProductViewModel.new(@product)
         assert(@view_model.ignore_inventory?)
       end
+
+      def test_blank_data
+        rule = {
+          name: 'price',
+          operator: 'less_than',
+          value: '10'
+        }
+        create_category(product_rules: [rule], active: false)
+        product = create_product
+        view_model = ProductViewModel.new(product)
+
+        assert_nil(view_model.default_category)
+      end
     end
   end
 end
