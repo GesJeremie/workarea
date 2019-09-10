@@ -102,6 +102,33 @@ module Workarea
         end
       end
 
+      # Execute sidekiq jobs with query cache enabled.
+      # Only enabled for workers that set use_elasticsearch_query_cache to true.
+      #
+      # @return [ Object ] The result of the call.
+      #
+      class SidekiqMiddleware
+        def initialize(options = {})
+          @options = options
+        end
+
+        def call(worker, msg, queue)
+          return @app.call(env) unless use_query_cache?(worker)
+
+          begin
+            Elasticsearch::QueryCache.cache { @app.call(env) }
+          ensure
+            Elasticsearch::QueryCache.clear_cache
+          end
+        end
+
+        private
+
+        def use_query_cache?(worker)
+          worker.class.sidekiq_options['use_elasticsearch_query_cache']
+        end
+      end
+
       module Client
         # bypass unless cache enabled
         #
